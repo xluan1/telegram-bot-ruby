@@ -2,7 +2,7 @@
 
 class Telegram::Utils
   class << self
-    def settings(username)
+    def setting(username)
       Rails.cache.fetch("TelegramUtils.settings_#{username}", expires_in: Constants::EXPIRATION_TIME) do
         yield
       end

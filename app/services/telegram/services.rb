@@ -29,13 +29,11 @@ class Telegram::Services < Telegram::Base
         language = user_settings[:language]
         case result.data
         when 'previous'
-          key_previous = nil
-          result.message.reply_markup.inline_keyboard.detect do |kb_buttons|
-            kb_buttons.detect { |kb_button| (message = Telegram::Utils.get_message(kb_button[:callback_data], language)) && (key_previous = message[:parent]) }.present?
-          end
-          message = Telegram::Utils.get_message(key_previous, language)
-          if message && (parent_message = Telegram::Utils.get_message(message[:parent], language))
-            edit_message(chat_id, result.message.message_id, parent_message[:answer], process_sub_markup(parent_message[:sub_group], language))
+          key_previous = prev_message(result.from.username, chat_id, result.message.message_id)
+
+          if (message = Telegram::Utils.get_message(key_previous, language))
+            edit_message(chat_id, result.message.message_id, message[:answer], process_sub_markup(message[:sub_group], language))
+            user_prev_messages(result.from.username, chat_id, result.message.message_id, message[:parent])
           else
             send_parent_messages(chat_id, result.message.message_id, { language: language, username: result.from.username })
           end
@@ -44,6 +42,7 @@ class Telegram::Services < Telegram::Base
         else
           message = Telegram::Utils.get_message(result.data, language)
           edit_message(chat_id, result.message.message_id, message[:answer], process_sub_markup(message[:sub_group], language))
+          user_prev_messages(result.from.username, chat_id, result.message.message_id, message[:parent])
         end
       else
         language = result.data
@@ -58,15 +57,16 @@ class Telegram::Services < Telegram::Base
 
   def send_parent_messages(chat_id, message_id, options = {})
     parent_messages = Telegram::Utils.get_parent_messages(options[:language])
-    # save user info to cache
-    set_user(options[:username], { language: options[:language] })
 
     case options[:language]
     when 'vn'
-      edit_message(chat_id, message_id, "Bạn cần hỗ trợ gì?", process_markup(parent_messages))
+      edit_message(chat_id, message_id, "Chào bạn, tôi là chuyên gia về quỹ DIRECT và có thể giải đáp mọi vấn đề thắc mắc của bạn. Bạn có thắc mắc gì không ?", process_markup(parent_messages))
     when 'en'
       edit_message(chat_id, message_id, "What support do you need?", process_markup(parent_messages))
     end
+    # save user info to cache
+    set_user(options[:username], { language: options[:language] })
+    user_prev_messages(options[:username], chat_id, message_id, nil)
   rescue Exception => e
     puts e.message
     edit_message(chat_id, message_id, message_first[:text], message_first[:markup])
@@ -85,13 +85,22 @@ class Telegram::Services < Telegram::Base
   end
 
   def process_markup(messages = {}, some_other_buttons = [])
-    kb_buttons      = messages.map { |key, message| Telegram::Bot::Types::InlineKeyboardButton.new(text: message[:question], callback_data: key) }
-    inline_keyboard = some_other_buttons.present? ? [kb_buttons, some_other_buttons] : [kb_buttons]
+    kb_buttons      = messages.map { |key, message| [Telegram::Bot::Types::InlineKeyboardButton.new(text: message[:question], callback_data: key)] }
+    inline_keyboard = some_other_buttons.present? ? kb_buttons.push(some_other_buttons) : kb_buttons
     Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: inline_keyboard)
   end
 
+  def prev_message(username, chat_id, message_id)
+    @users[username][:messages]["#{chat_id}_#{message_id}"]
+  end
+
+  def user_prev_messages(username, chat_id, message_id, key)
+    @users[username][:messages]                             = {} unless @users[username][:messages]
+    @users[username][:messages]["#{chat_id}_#{message_id}"] = key
+  end
+
   def set_user(username, settings = {})
-    Telegram::Utils.settings(username) { @users[username] = settings }
+    Telegram::Utils.setting(username) { @users[username] = settings }
   end
 
   def delete_user(username)
