@@ -5,8 +5,9 @@ class Telegram::Services < Telegram::Base
   include Telegram::Messages
 
   def initialize
-    super("6642024775:AAFUMC24kXRKPzmHA8wRc-xpJdQXzU-ebuw")
-    @users = {}
+    super(ENV['TELEGRAM_BOT_TOKEN'])
+    @users           = {}
+    @message_history = {}
   end
 
   def execute(result)
@@ -16,7 +17,12 @@ class Telegram::Services < Telegram::Base
       # show button language
       case result.text
       when '/start'
-        @bot.api.send_message(chat_id: chat_id, text: message_first[:text], reply_markup: message_first[:markup]) unless @users[result.from.username]
+        user_settings = @users[result.from.username]
+        if user_settings
+          send_parent_messages(chat_id, result.message.message_id, user_settings[:language])
+        else
+          @bot.api.send_message(chat_id: chat_id, text: message_first[:text], reply_markup: message_first[:markup])
+        end
       when '/restart'
         delete_user(result.from.username)
         @bot.api.send_message(chat_id: chat_id, text: message_first[:text], reply_markup: message_first[:markup])
@@ -29,24 +35,26 @@ class Telegram::Services < Telegram::Base
         language = user_settings[:language]
         case result.data
         when 'previous'
-          key_previous = prev_message(result.from.username, chat_id, result.message.message_id)
+          key_previous = prev_message(chat_id, result.message.message_id)
 
           if (message = Telegram::Utils.get_message(key_previous, language))
             edit_message(chat_id, result.message.message_id, message[:answer], process_sub_markup(message[:sub_group], language))
-            user_prev_messages(result.from.username, chat_id, result.message.message_id, message[:parent])
+            save_history(chat_id, result.message.message_id, message[:parent])
           else
-            send_parent_messages(chat_id, result.message.message_id, { language: language, username: result.from.username })
+            send_parent_messages(chat_id, result.message.message_id, language)
           end
         when 'first_previous'
-          send_parent_messages(chat_id, result.message.message_id, { language: language, username: result.from.username })
+          send_parent_messages(chat_id, result.message.message_id, language)
         else
           message = Telegram::Utils.get_message(result.data, language)
           edit_message(chat_id, result.message.message_id, message[:answer], process_sub_markup(message[:sub_group], language))
-          user_prev_messages(result.from.username, chat_id, result.message.message_id, message[:parent])
+          save_history(chat_id, result.message.message_id, message[:parent])
         end
       else
         language = result.data
-        send_parent_messages(chat_id, result.message.message_id, { language: language, username: result.from.username })
+        send_parent_messages(chat_id, result.message.message_id, language)
+        # save user info to cache
+        set_user(@users[result.from.username], { language: language })
       end
     end
   rescue Exception => e
@@ -55,18 +63,15 @@ class Telegram::Services < Telegram::Base
 
   private
 
-  def send_parent_messages(chat_id, message_id, options = {})
-    parent_messages = Telegram::Utils.get_parent_messages(options[:language])
+  def send_parent_messages(chat_id, message_id, language)
+    parent_messages = Telegram::Utils.get_parent_messages(language)
 
-    case options[:language]
+    case language
     when 'vn'
       edit_message(chat_id, message_id, "Chào bạn, tôi là chuyên gia về quỹ DIRECT và có thể giải đáp mọi vấn đề thắc mắc của bạn. Bạn có thắc mắc gì không ?", process_markup(parent_messages))
     when 'en'
       edit_message(chat_id, message_id, "What support do you need?", process_markup(parent_messages))
     end
-    # save user info to cache
-    set_user(options[:username], { language: options[:language] })
-    user_prev_messages(options[:username], chat_id, message_id, nil)
   rescue Exception => e
     puts e.message
     edit_message(chat_id, message_id, message_first[:text], message_first[:markup])
@@ -90,13 +95,12 @@ class Telegram::Services < Telegram::Base
     Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: inline_keyboard)
   end
 
-  def prev_message(username, chat_id, message_id)
-    @users[username][:messages]["#{chat_id}_#{message_id}"]
+  def prev_message(chat_id, message_id)
+    @message_history["#{chat_id}_#{message_id}"]
   end
 
-  def user_prev_messages(username, chat_id, message_id, key)
-    @users[username][:messages]                             = {} unless @users[username][:messages]
-    @users[username][:messages]["#{chat_id}_#{message_id}"] = key
+  def save_history(chat_id, message_id, key)
+    @message_history["#{chat_id}_#{message_id}"] = key
   end
 
   def set_user(username, settings = {})

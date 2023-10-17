@@ -45,6 +45,10 @@ GEM
     concurrent-ruby (1.2.2)
     crass (1.0.6)
     date (3.3.3)
+    dotenv (2.8.1)
+    dotenv-rails (2.8.1)
+      dotenv (= 2.8.1)
+      railties (>= 3.2)
     dry-core (1.0.0)
       concurrent-ruby (~> 1.0)
       zeitwerk (~> 2.6)
@@ -177,6 +181,7 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
+  dotenv-rails
   listen (~> 3.0.5)
   pg (>= 0.18, < 2.0)
   puma (~> 3.0)
