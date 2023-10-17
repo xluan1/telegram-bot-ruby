@@ -14,10 +14,6 @@ class Telegram::Base
     end
   end
 
-  def stop
-    Signal.trap('INT') { @bot.stop }
-  end
-
   def edit_message(chat_id, message_id, text, reply_markup = nil)
     @bot.api.edit_message_text(chat_id: chat_id, text: text, message_id: message_id, reply_markup: reply_markup)
   end

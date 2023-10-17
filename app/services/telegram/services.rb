@@ -54,11 +54,11 @@ class Telegram::Services < Telegram::Base
         language = result.data
         send_parent_messages(chat_id, result.message.message_id, language)
         # save user info to cache
-        set_user(@users[result.from.username], { language: language })
+        set_user(result.from.username, { language: language })
       end
     end
   rescue Exception => e
-    @bot.api.send_message(chat_id: chat_id, text: e.message)
+    puts e.message
   end
 
   private
@@ -68,13 +68,10 @@ class Telegram::Services < Telegram::Base
 
     case language
     when 'vn'
-      edit_message(chat_id, message_id, "Chào bạn, tôi là chuyên gia về quỹ DIRECT và có thể giải đáp mọi vấn đề thắc mắc của bạn. Bạn có thắc mắc gì không ?", process_markup(parent_messages))
+      edit_message(chat_id, message_id, "FXCE DIRECT", process_markup(parent_messages))
     when 'en'
       edit_message(chat_id, message_id, "What support do you need?", process_markup(parent_messages))
     end
-  rescue Exception => e
-    puts e.message
-    edit_message(chat_id, message_id, message_first[:text], message_first[:markup])
   end
 
   def process_sub_markup(sub_group, language)
