@@ -26,7 +26,7 @@ module Telegram::Messages
       when 'en'
         en_messages
       else
-        raise "#{language} language is not supported"
+        raise ErrorsHandler::InvalidLanguage, "#{language} language is not supported"
       end
     end
 

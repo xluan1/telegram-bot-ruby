@@ -5,8 +5,7 @@ class Constants
     {
       "key":       "1",
       "question":  "DIRECT",
-      "answer":    "Là nơi tìm kiếm và rèn luyện trader... Quỹ bao gồm 4 vòng.
-mỗi vòng có những thử thách khác nhau cùng với phần thưởng hấp dẫn... ",
+      "answer":    "DIRECT",
       "sub_group": "3,7,17",
     },
     {
@@ -14,14 +13,14 @@ mỗi vòng có những thử thách khác nhau cùng với phần thưởng h�
       "question":  "GIGA",
       "answer":    "GIGA - 
  Tự động hóa giao dịch cho người không biết code",
-      "sub_group": "7,8",
+      "sub_group": "21,22",
     },
     {
       "key":       "3",
       "question":  "Bắt đầu thế nào",
       "answer":    "Bắt đầu thế nào",
       "parent":    "1",
-      "sub_group": "9,10,11"
+      "sub_group": "4,5,6"
     },
     {
       "key":      "4",
@@ -56,16 +55,18 @@ https://faq.fxce.com/post/huong-dan-thuc-hien-xac-minh-danh-tinh-kyc_6343d94b57f
       "sub_group": "8"
     },
     {
-      "key":      "7",
-      "question": "Nhận vốn",
-      "answer":   "Nhận vốn",
-      "parent":   "1"
+      "key":       "7",
+      "question":  "Nhận vốn",
+      "answer":    "Nhận vốn",
+      "parent":    "1",
+      "sub_group": "8,13"
     },
     {
-      "key":      "8",
-      "question": "Tài khoản Demo Direct",
-      "answer":   "Tài khoản Demo Direct",
-      "parent":   "7"
+      "key":       "8",
+      "question":  "Tài khoản Demo Direct",
+      "answer":    "Tài khoản Demo Direct",
+      "parent":    "7",
+      "sub_group": "9,10,11,12"
     },
     {
       "key":       "9",
@@ -114,10 +115,11 @@ https://faq.fxce.com/post/huong-dan-thay-doi-mat-khau-tai-khoan-mt5-fxce_6346212
       "parent":   "8"
     },
     {
-      "key":      "13",
-      "question": "Tài khoản Direct",
-      "answer":   "Tài khoản Direct",
-      "parent":   "7"
+      "key":       "13",
+      "question":  "Tài khoản Direct",
+      "answer":    "Tài khoản Direct",
+      "parent":    "7",
+      "sub_group": "14,15,16"
     },
     {
       "key":       "14",
@@ -152,10 +154,11 @@ https://faq.fxce.com/post/huong-dan-thay-doi-mat-khau-tai-khoan-mt5-fxce_6346212
       "parent":   "13"
     },
     {
-      "key":      "17",
-      "question": "Tăng vốn và đầu tư",
-      "answer":   "Tăng vốn và đầu tư",
-      "parent":   "1"
+      "key":       "17",
+      "question":  "Tăng vốn và đầu tư",
+      "answer":    "Tăng vốn và đầu tư",
+      "parent":    "1",
+      "sub_group": "18,19,20"
     },
     {
       "key":      "18",

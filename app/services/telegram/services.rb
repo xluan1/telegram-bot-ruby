@@ -51,10 +51,14 @@ class Telegram::Services < Telegram::Base
           save_history(chat_id, result.message.message_id, message[:parent])
         end
       else
-        language = result.data
-        send_parent_messages(chat_id, result.message.message_id, language)
-        # save user info to cache
-        set_user(result.from.username, { language: language })
+        begin
+          language = result.data
+          send_parent_messages(chat_id, result.message.message_id, language)
+          # save user info to cache
+          set_user(result.from.username, { language: language })
+        rescue ErrorsHandler::InvalidLanguage => e
+          edit_message(chat_id, result.message.message_id, message_first[:text], message_first[:markup])
+        end
       end
     end
   rescue Exception => e
