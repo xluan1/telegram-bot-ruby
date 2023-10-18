@@ -19,7 +19,7 @@ class Telegram::Services < Telegram::Base
       when '/start'
         user_settings = @users[result.from.username]
         if user_settings
-          send_parent_messages(chat_id, result.message.message_id, user_settings[:language])
+          send_parent_messages(chat_id, result.message_id, user_settings[:language], false)
         else
           @bot.api.send_message(chat_id: chat_id, text: message_first[:text], reply_markup: message_first[:markup])
         end
@@ -67,15 +67,20 @@ class Telegram::Services < Telegram::Base
 
   private
 
-  def send_parent_messages(chat_id, message_id, language)
+  def send_parent_messages(chat_id, message_id, language, is_edit = true)
     parent_messages = Telegram::Utils.get_parent_messages(language)
 
+    text   = ""
+    markup = nil
     case language
     when 'vn'
-      edit_message(chat_id, message_id, "FXCE DIRECT", process_markup(parent_messages))
+      text   = "FXCE DIRECT"
+      markup = process_markup(parent_messages)
     when 'en'
-      edit_message(chat_id, message_id, "What support do you need?", process_markup(parent_messages))
+      text   = "What support do you need?"
+      markup = process_markup(parent_messages)
     end
+    is_edit ? edit_message(chat_id, message_id, text, markup) : @bot.api.send_message(chat_id: chat_id, text: text, reply_markup: markup)
   end
 
   def process_sub_markup(sub_group, language)
