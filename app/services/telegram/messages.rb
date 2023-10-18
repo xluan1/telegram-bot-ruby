@@ -2,6 +2,7 @@
 
 module Telegram::Messages
   extend ActiveSupport::Concern
+  require 'csv'
 
   def message_first
     inline_keyboard = [[
@@ -33,7 +34,17 @@ module Telegram::Messages
     private
 
     def vn_messages
-      Constants::VIET_NAM.to_h { |item| [item[:key], item] }
+      items = {}
+      CSV.foreach('db/files/vn_messages.csv', headers: true) do |row|
+        items[row['key']] = {
+          key:       row['key'],
+          question:  row['question'],
+          answer:    row['answer'],
+          sub_group: row['sub_group'],
+          parent:    row['parent'],
+        }
+      end
+      items
     end
 
     def en_messages
