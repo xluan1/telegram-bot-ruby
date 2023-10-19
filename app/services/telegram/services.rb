@@ -8,6 +8,9 @@ class Telegram::Services < Telegram::Base
     super(ENV['TELEGRAM_BOT_TOKEN'])
     @users           = {}
     @message_history = {}
+    @bot.api.set_my_commands(commands: [Telegram::Bot::Types::BotCommand.new(command: "/start", description: "show questions and answers"),
+                                        Telegram::Bot::Types::BotCommand.new(command: "/restart", description: "wipe out bot memory")]
+    )
   end
 
   def execute(result)
